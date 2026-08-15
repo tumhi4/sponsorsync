@@ -94,7 +94,7 @@ Deploy `SponsorSyncCourt` with your wallet address as `operator`.
 
 ### 4. Submit Evidence (`submit_evidence`)
 * `campaign_id`: `"SPONSOR_CAMPAIGN_001"`
-* `video_evidence_url`: `"https://metaremover.github.io/demo/youtube_perfect.html"`
+* `video_evidence_url`: `"https://sponsor-sync-demo.vercel.app/youtube_perfect.html"`
 
 ### 5. Run Initial Audit (`run_initial_audit`)
 * `campaign_id`: `"SPONSOR_CAMPAIGN_001"`

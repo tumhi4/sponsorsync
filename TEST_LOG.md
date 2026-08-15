@@ -34,7 +34,7 @@ This document records the test cases and execution log for **SponsorSyncCourt** 
    > *Output: `"SPONSOR_CAMPAIGN_001"`*
 2. Call `register_creator("SPONSOR_CAMPAIGN_001")`:
    > *Output: `"GL-VERIFY-8F3K2"`*
-3. Call `submit_evidence("SPONSOR_CAMPAIGN_001", "https://metaremover.github.io/demo/youtube_perfect.html")`.
+3. Call `submit_evidence("SPONSOR_CAMPAIGN_001", "https://sponsor-sync-demo.vercel.app/youtube_perfect.html")`.
 4. Call `run_initial_audit("SPONSOR_CAMPAIGN_001")`.
 5. Call `get_campaign("SPONSOR_CAMPAIGN_001")`:
    ```json
