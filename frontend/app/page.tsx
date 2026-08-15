@@ -33,7 +33,7 @@ export default function SponsorSyncApp() {
     minViews: 500000,
     escrowAmountUsdc: 5000,
     claimCode: 'GL-VERIFY-8F3K2',
-    videoUrl: 'https://metaremover.github.io/demo/youtube_perfect.html',
+    videoUrl: 'https://sponsor-sync-demo.vercel.app/youtube_perfect.html',
     status: 'EVIDENCE_SUBMITTED',
     verdict: 'PENDING',
     tranche1: false,
@@ -41,9 +41,9 @@ export default function SponsorSyncApp() {
   });
 
   const demoUrls = {
-    perfect: 'https://metaremover.github.io/demo/youtube_perfect.html',
-    burner: 'https://metaremover.github.io/demo/youtube_burner.html',
-    botfarm: 'https://metaremover.github.io/demo/youtube_botfarm.html',
+    perfect: 'https://sponsor-sync-demo.vercel.app/youtube_perfect.html',
+    burner: 'https://sponsor-sync-demo.vercel.app/youtube_burner.html',
+    botfarm: 'https://sponsor-sync-demo.vercel.app/youtube_botfarm.html',
   };
 
   const runAuditSimulation = () => {
