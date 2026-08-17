@@ -6,6 +6,14 @@ An Intelligent Contract protocol built on **GenLayer** that eliminates creator f
 
 ---
 
+## 🔗 Live Deployment & Repository Links
+
+- **GenLayer Explorer Contract**: [`0x6FC89A7FcA83401dbe04E502d0053e7074aAB68D`](https://explorer-studio.genlayer.com/address/0x6FC89A7FcA83401dbe04E502d0053e7074aAB68D)
+- **GitHub Repository**: [`https://github.com/tumhi4/sponsorsync`](https://github.com/tumhi4/sponsorsync)
+- **Live Frontend Portal**: [`https://sponsor-sync-demo.vercel.app/`](https://sponsor-sync-demo.vercel.app/)
+
+---
+
 ## 🌟 The Core Problem
 
 Brands lose millions annually to four primary creator fraud vectors:
@@ -14,13 +22,11 @@ Brands lose millions annually to four primary creator fraud vectors:
 3. **URL Theft**: Submitting someone else's viral video link.
 4. **Delete & Dash**: Creators deleting or privating sponsored videos immediately after payment clears.
 
-Traditional deterministic oracles (e.g. Chainlink) cannot evaluate transcripts, verify channel authority, or judge sentiment. Human compliance agencies are slow, expensive, and opaque. **SponsorSync solves this by using GenLayer's decentralized AI consensus committee to verify performance before triggering staged escrow releases on EVM chains.**
+Traditional deterministic oracles cannot evaluate transcripts or verify channel authority. **SponsorSync solves this by using GenLayer's decentralized AI consensus committee to verify performance before triggering staged escrow releases on EVM chains.**
 
 ---
 
-## 🛡️ The 4 Novel Anti-Fraud Differentiators (Why SponsorSync is Unique)
-
-Unlike naive sponsorship checkers (e.g., ProofSponsor), SponsorSync introduces four robust, un-gameable security layers:
+## 🛡️ The 4 Novel Anti-Fraud Differentiators
 
 ```
 +--------------------------------------------------------------------------------------------------+
@@ -34,72 +40,92 @@ Unlike naive sponsorship checkers (e.g., ProofSponsor), SponsorSync introduces f
 ```
 
 1. **Layer 1 — Channel Authority & History Gate**:
-   - Rejects burner channels created <30 days ago or below brand-configured subscriber/view thresholds.
+   - Rejects burner channels created <30 days ago or below brand-configured subscriber/view thresholds (`INSUFFICIENT_CHANNEL_AUTHORITY`).
 2. **Layer 2 — Bot-Farm Detection via Semantic Comment Analysis**:
-   - AI committee analyzes top comments for contextual discussion (e.g., `"Loved the pump design at 04:12"`) vs bot spam (`"🔥🔥🔥"`, `"Nice video"`), combined with anomalous engagement ratio checks.
+   - AI committee analyzes top comments for contextual discussion vs bot spam, combined with like/view ratio anomaly checks (`SUSPECTED_BOT_ACTIVITY`).
 3. **Layer 3 — Cryptographic Channel Binding (`GL-VERIFY` Claim Code)**:
-   - On registration, the contract generates a unique claim code (e.g., `GL-VERIFY-8F3K2`) bound to the creator's wallet. The creator must include this in the video description, proving channel control and preventing URL theft.
+   - On registration, the contract generates a unique claim code (e.g., `GL-VERIFY-855736`) bound to the creator's wallet. The creator must include this in the video description to prove channel control (`MISSING_CLAIM_CODE`).
 4. **Layer 4 — Delete-&-Dash Temporal Staged Escrow**:
    - **Day 0 (Initial Audit)**: 50% USDC released upon full compliance.
    - **Day 7 (Retention Audit)**: GenLayer re-audits the URL. If public and intact, remaining 50% releases; if deleted/privated, remaining funds are clawed back to the brand.
 
 ---
 
-## 🏗️ Technical Architecture & Separation of Concerns
+## 🏗️ Technical Architecture & Verified Settlement Relay
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    LAYER 1: FRONTEND UI                     │
-│    Next.js + Tailwind (Brand Portal, Creator Portal, Panel) │
+│    Next.js + Tailwind (Method-Matched GenLayer JSON-RPC)    │
 └──────────────────────────────┬──────────────────────────────┘
-                               │ GenLayer SDK / RPC
+                               │ GenLayer RPC (gen_sendTransaction / gen_callView)
 ┌──────────────────────────────▼──────────────────────────────┐
 │            LAYER 2: GENLAYER INTELLIGENT CONTRACT           │
 │                    SponsorSyncCourt.py                      │
-│   • gl.nondet.web.render() scraping                         │
-│   • gl.eq_principle.prompt_non_comparative()                │
-│   • Deterministic Python Anti-Fraud Verdict Engine          │
-│   • 7-Day Temporal Retention State Machine                  │
+│   • gl.nondet.web.render() DOM scraping                     │
+│   • Asymmetric Equivalence Consensus Committee              │
+│   • Sets tranche_1_released / tranche_2_released state      │
 └──────────────────────────────┬──────────────────────────────┘
-                               │ Emits On-Chain Verdicts
+                               │ Polls Verdict (get_campaign)
 ┌──────────────────────────────▼──────────────────────────────┐
-│                 LAYER 3: EVM VALUE SETTLEMENT               │
+│            LAYER 3: VERIFIED SETTLEMENT RELAY               │
+│               relay/SponsorSyncRelay.py                     │
+│   • Reads GenLayer Court verdict and release flags          │
+│   • Calls releaseTranche1 / releaseTranche2 / claimRefund   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ EVM Transactions
+┌──────────────────────────────▼──────────────────────────────┐
+│             LAYER 4: EVM STAGED ESCROW CONTRACT             │
 │                    SponsorSyncEscrow.sol                    │
-│   • Holds USDC on Base/Arbitrum                             │
-│   • Releases 50% Tranche 1 on INITIAL_APPROVED              │
-│   • Releases 50% Tranche 2 on FULLY_SETTLED                 │
-│   • Claws back 50% on CLAWBACK_TRIGGERED                    │
+│   • Holds 100% USDC performance escrow on Base/Arbitrum     │
+│   • Disburses 50% on Tranche 1 and 50% on Tranche 2         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Step-by-Step GenLayer Studio Testing Guide
+## 🚀 Running the Verified Settlement Relay
+
+```bash
+# Set environment variables
+export GENLAYER_RPC="https://studio.genlayer.com/api"
+export GENLAYER_COURT_ADDRESS="0x6FC89A7FcA83401dbe04E502d0053e7074aAB68D"
+export EVM_RPC_URL="https://sepolia.base.org"
+export EVM_ESCROW_ADDRESS="0x3Fa9b23f81902c34918239482910394817e12a89"
+
+# Run the settlement relay
+python3 relay/SponsorSyncRelay.py SPONSOR_CAMPAIGN_002
+```
+
+---
+
+## 🛠️ Step-by-Step GenLayer Studio Testing Guide
 
 ### 1. Deploy Contract
-Deploy `SponsorSyncCourt` with your wallet address as `operator`.
+Deploy `SponsorSyncCourt.py` in Studio with your wallet as `operator`.
 
 ### 2. Create Campaign (`create_campaign`)
+* `creator_address`: `"0x71546f55c131acd54cf93e181b9cabaeaf440fc3"`
 * `required_handle`: `"@MrBeast"`
 * `platform`: `"YOUTUBE"`
 * `min_subscribers`: `1000000`
 * `min_avg_views`: `500000`
-* `brief_requirements`: `"Must feature GenLayer sponsorship in first 3 minutes, show promo code MRBEAST, and leave link in description."`
+* `brief_requirements`: `"Feature GenLayer sponsorship in first 3 minutes and display promo code MRBEAST"`
 * `escrow_amount_usdc`: `5000`
-> *Returns: `"SPONSOR_CAMPAIGN_001"`*
+> *Returns: `"SPONSOR_CAMPAIGN_002"`*
 
 ### 3. Register Creator (`register_creator`)
-* `campaign_id`: `"SPONSOR_CAMPAIGN_001"`
-> *Returns Unique Claim Code: `"GL-VERIFY-8F3K2"`*
+* `campaign_id`: `"SPONSOR_CAMPAIGN_002"`
+> *Returns Unique Claim Code: `"GL-VERIFY-855736"`*
 
 ### 4. Submit Evidence (`submit_evidence`)
-* `campaign_id`: `"SPONSOR_CAMPAIGN_001"`
+* `campaign_id`: `"SPONSOR_CAMPAIGN_002"`
 * `video_evidence_url`: `"https://sponsor-sync-demo.vercel.app/youtube_perfect.html"`
 
 ### 5. Run Initial Audit (`run_initial_audit`)
-* `campaign_id`: `"SPONSOR_CAMPAIGN_001"`
+* `campaign_id`: `"SPONSOR_CAMPAIGN_002"`
 > *Result: `status: "INITIAL_APPROVED"`, `verdict: "FULL_COMPLIANCE"`, `tranche_1_released: true`.*
 
 ### 6. Run Retention Audit (`run_retention_audit`)
-* `campaign_id`: `"SPONSOR_CAMPAIGN_001"`
+* `campaign_id`: `"SPONSOR_CAMPAIGN_002"`
 > *Result: `status: "FULLY_SETTLED"`, `tranche_2_released: true`.*
